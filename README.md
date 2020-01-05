@@ -1,2 +1,2 @@
-# cripto
-cripto market
+# crypto
+Финальный проект на курсе Learn Javascript
