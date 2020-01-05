@@ -6,6 +6,12 @@ export class Basket {
     this._render();
   }
 
+  _update(buyItem) {
+    this._buyItem = buyItem;
+    this._portfolioWorth = this._buyItem.worth;
+    this._render();
+  }
+
   _render() {
     this._el.innerHTML = `
       <ul class="collapsible portfolio">
