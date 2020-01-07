@@ -21,12 +21,10 @@ export class App {
         <div class="col s12">
           <h1>Tiny Crypto Market</h1>
         </div>
-        <div class="row portfolio-row">
-          <div class="col s6 offset-s6" data-element="basket"></div>
-        </div>
         <div class="row">
           <div class="col s12" data-element="table"></div>
         </div>
+        <div class="col s6 offset-s6" data-element="basket"></div>
         <div data-element="trade-widget"></div>
       </div>
     `;
@@ -41,8 +39,9 @@ export class App {
     this._table = new Table({
       element: this._el.querySelector('[data-element=table]'),
       data: this._data,
-      onRowClick: (id) => this._tradeItem(id),
     });
+
+    this._table.on('rowClick', e => this._tradeItem(e.detail));
   }
 
   _initBasket() {
@@ -55,8 +54,13 @@ export class App {
   _initTradeWidget() {
     this._tradeWidget = new TradeWidget({
       element: this._el.querySelector('[data-element=trade-widget]'),
-      balance: this._userBalance,
-      callBack: (buyItem) => this._basket._update(buyItem),
+      callBack: (buyItem) => {
+        const purchasePrice = buyItem.item.price * buyItem.amount;
+        this._userBalance -= purchasePrice;
+        this._basket.updateItem(buyItem);
+        this._basket.updateBalance(this._userBalance);
+      },
+      updateBalance: () => this._userBalance,
     });
   }
 }

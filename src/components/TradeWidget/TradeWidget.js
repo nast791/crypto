@@ -1,13 +1,15 @@
-export class TradeWidget {
-  static total = 0;
+import { Component } from "../Component/Component.js";
 
-  constructor({ element, balance, callBack }) {
+export class TradeWidget extends Component {
+  constructor({ element, callBack, updateBalance }) {
+    super();
     this._el = element;
-    this._balance = balance;
-    this._callBack = callBack;
+    this._updateBalance = updateBalance || function() {};
+    this._callBack = callBack || function() {};
 
-    this._el.addEventListener('input', e => {
+    this._el.addEventListener('input', (e) => {
       let value = Number(e.target.value);
+      this._balance = this._updateBalance();
       if (this._currentItem.price * value > this._balance) {
         value = Math.floor(this._balance / this._currentItem.price);
         e.target.value = value;
@@ -16,13 +18,19 @@ export class TradeWidget {
     });
 
     this._el.addEventListener('click', e => {
-      const targetCancel = e.target.closest('.modal-cancel');
-      if (targetCancel) {
+      e.preventDefault();
+      if (e.target.closest('[data-action=close]')) {
         this._close();
       }
-      const targetBuy = e.target.closest('.modal-buy');
-      if (targetBuy) {
-        if (this._value) {
+
+      if (e.target.closest('[data-action=buy]')) {
+        const numeric = new RegExp(/^\d+$/); // только числа
+        const amountValue = this._el.querySelector('#amount').value;
+        if (numeric.test(amountValue) && amountValue > 0) {
+          this._buyItem = {
+            item: this._currentItem,
+            amount: amountValue,
+          };
           this._callBack(this._buyItem);
         }
         this._close();
@@ -31,8 +39,7 @@ export class TradeWidget {
   }
 
   _close() {
-    const modalWindow = this._el.querySelector('#modal');
-    modalWindow.classList.remove('open');
+    this._el.querySelector('#modal').classList.remove('open');
   }
 
   _trade(item) {
@@ -45,36 +52,28 @@ export class TradeWidget {
     this._totalEl = this._el.querySelector('#item-total');
     this._value = value;
     this._totalEl.textContent = this._currentItem.price * this._value;
-    TradeWidget.total += Number(this._totalEl.textContent);
-    this._buyItem = {
-      name: this._currentItem .name,
-      amount: this._value,
-      price: this._currentItem.price,
-      worth: TradeWidget.total,
-      total: this._totalEl.textContent,
-    };
   }
 
   _render() {
     this._el.innerHTML = `
       <div id="modal" class="modal open">
         <div class="modal-content">
-          <h4>Buying ${this._currentItem .name}</h4>
+          <h4>Buying ${this._currentItem.name}</h4>
           <p>
-            Current price: ${this._currentItem .price}. Total: <span id="item-total">${this._total}</span>
+            Current price: ${this._currentItem.price}. Total: <span id="item-total">${this._total}</span>
           </p>
           <div class="row">
             <form class="col s12">
               <div class="input-field col s4">
-                <input id="amount" type="number">
+                <input id="amount" type="number" min="0" pattern="[0-9]" inputmode="numeric">
                 <label for="amount">Amount</label>
               </div>
             </form>
           </div>
         </div>
         <div class="modal-footer">
-          <a href="#!" class="modal-close waves-effect waves-teal btn-flat modal-buy">Buy</a>
-          <a href="#!" class="modal-close waves-effect waves-teal btn-flat modal-cancel">Cancel</a>
+          <a href="#!" data-action="buy" class="modal-close waves-effect waves-teal btn-flat modal-buy">Buy</a>
+          <a href="#!" data-action="close" class="modal-close waves-effect waves-teal btn-flat modal-cancel">Cancel</a>
         </div>
       </div>
     `;

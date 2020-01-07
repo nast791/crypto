@@ -3,8 +3,9 @@ html, body {
 }
 
 #app {
+    position: relative;
     display: flex;
-    height: 100%;
+    min-height: 100%;
     flex-direction: column;
     justify-content: flex-end;
 }
@@ -29,8 +30,9 @@ tr td {
     margin-bottom: auto;
 }
 
-[data-element="portfolio"] {
+[data-element="basket"] {
     position: absolute;
+    content: "";
     top: 30px;
     right: 30px;
     background-color: white;
