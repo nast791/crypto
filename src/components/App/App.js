@@ -6,11 +6,13 @@ import {DataService} from '../../services/DataService.js';
 export class App {
   constructor({ element }) {
     this._el = element;
-    this._data = DataService.getData();
-    this._userBalance = 10000;
-
+    this._userBalance = Number(10000).toFixed(2);
     this._render();
-    this._initTable();
+
+    DataService.getCurrencies().then(data => {
+      this._data = data;
+      this._initTable();
+    })
     this._initBasket();
     this._initTradeWidget();
   }
