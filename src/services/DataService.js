@@ -1,3 +1,5 @@
+import { HttpService } from './HttpService.js';
+
 const data =
 [
   {
@@ -105,52 +107,30 @@ const data =
 const COINS_URL = 'https://api.coinpaprika.com/v1/coins';
 const getSingleCoinUrl = id => `${COINS_URL}/${id}/ohlcv/latest`;
 
-const HttpService = {
-  sendRequest(url) {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', url);
-      xhr.send();
-
-      xhr.onload = () => {
-        let responseData = JSON.parse(xhr.responseText);
-        resolve(responseData);
-      }
-
-      xhr.onerror = () => {
-        reject(xhr.statusText);
-      }
-    })
-  },
-
-  sendMultipleRequests(urls) {
-    let requests = urls.map(url => HttpService.sendRequest(url));
-    return Promise.all(requests);
-  }
-};
-
 export const DataService = {
-  getCurrencies() {
-    let promise = HttpService.sendRequest(COINS_URL);
+  async getCurrencies(query = {filter: ''}) {
+    let {filter} = query;
 
-    return promise.then(data => {
-      data = data.slice(0, 10);
+    try {
+      let data = await HttpService.sendRequest(COINS_URL);
+      data = data.filter(item => {
+        return item.name.toLowerCase().includes(filter);
+      }).slice(0, 10);
       return DataService.getCurrenciesPrices(data);
-    }).catch(err => {
+    } catch (err) {
       console.error(err);
-    });
+    }
   },
 
-  getCurrenciesPrices(data) {
+  async getCurrenciesPrices(data) {
     let coinsUrls = data.map(coin => getSingleCoinUrl(coin.id));
+    let dataPrices = await HttpService.sendMultipleRequests(coinsUrls);
 
-    return HttpService.sendMultipleRequests(coinsUrls).then(coins => {
-      const dataWithPrice = data.map((item, index) => {
-        item.price = coins[index][0].close.toFixed(2);
-        return item;
-      });
-
-      return dataWithPrice;
-    })
+    data.map((item, index) => {
+      let coinPrice = dataPrices[index][0] || {close: NaN};
+      item.price = coinPrice.close.toFixed(2);
+      return item;
+    });
+    return data;
   }
 }

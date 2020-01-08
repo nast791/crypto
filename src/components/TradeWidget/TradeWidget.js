@@ -42,7 +42,7 @@ export class TradeWidget extends Component {
     this._el.querySelector('#modal').classList.remove('open');
   }
 
-  _trade(item) {
+  trade(item) {
     this._currentItem = item;
     this._total = 0;
     this._render();
@@ -51,7 +51,7 @@ export class TradeWidget extends Component {
   _updateDisplay(value) {
     this._totalEl = this._el.querySelector('#item-total');
     this._value = value;
-    this._totalEl.textContent = this._currentItem.price * this._value;
+    this._totalEl.textContent = (this._currentItem.price * this._value).toFixed(2);
   }
 
   _render() {

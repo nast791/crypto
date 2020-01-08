@@ -23,7 +23,7 @@ export class Basket {
     currentItem.total = item.price * currentItem.amount; // меняем общую сумму
     this._items[item.id] = currentItem; // добавляем в общий объект "id итема": "currentItem"
 
-    this._portfolioWorth = Object.values(this._items).reduce((sum, item) => sum + item.total, 0); // в каждом итеме находим общую сумму, складываем эти суммы
+    this._portfolioWorth = (Object.values(this._items).reduce((sum, item) => sum + item.total, 0)).toFixed(2); // в каждом итеме находим общую сумму, складываем эти суммы
     this._render();
   }
 
